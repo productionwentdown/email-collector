@@ -2,6 +2,7 @@ package main // import "github.com/productionwentdown/email-collector"
 
 import (
 	"encoding/csv"
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -12,10 +13,18 @@ import (
 	"github.com/productionwentdown/email-collector/checkmail"
 )
 
+var filename string
+var listen string
+var redirect string
+
 func main() {
+	flag.StringVar(&filename, "file", "list.csv", "file to append records to")
+	flag.StringVar(&listen, "listen", ":8080", "address to listen to")
+	flag.StringVar(&redirect, "redirect", "/subscribed", "path to redirect to upon success")
+	flag.Parse()
 
 	csvMutex := &sync.Mutex{}
-	csvFile, err := os.OpenFile("list.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	csvFile, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer csvFile.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -49,10 +58,10 @@ func main() {
 		csvWriter.Write([]string{email, time.Now().String()})
 		csvWriter.Flush()
 		csvMutex.Unlock()
-		w.Header().Add("Location", "/subscribed")
+		w.Header().Add("Location", redirect)
 		w.WriteHeader(303)
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(listen, nil))
 
 }
