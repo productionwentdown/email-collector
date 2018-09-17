@@ -40,22 +40,19 @@ func main() {
 		err := r.ParseForm()
 		if err != nil {
 			log.Println(err)
-			w.WriteHeader(400)
-			w.Write([]byte("An error occurred. Please try again"))
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 		email := r.Form.Get("email")
 		if err := checkmail.ValidateFormat(email); err != nil {
 			log.Println(email, err)
-			w.WriteHeader(400)
-			w.Write([]byte("Email is not valid"))
+			http.Error(w, "Email is not valid", http.StatusBadRequest)
 			return
 		}
 		err = checkmail.ValidateHost(email)
 		if _, ok := err.(checkmail.SmtpError); !ok && err != nil {
 			log.Println(email, err)
-			w.WriteHeader(400)
-			w.Write([]byte("Email is not valid"))
+			http.Error(w, "Email is not valid", http.StatusBadRequest)
 			return
 		}
 		log.Println(email, "success")
@@ -70,20 +67,20 @@ func main() {
 			payload, err := json.Marshal(object)
 			if err != nil {
 				log.Println("json.Marshal failed, not supposed to happen!")
-				w.WriteHeader(500)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 			resp, err := http.Post(slack, "application/json", bytes.NewBuffer(payload))
 			if err != nil {
 				log.Println(err)
-				w.WriteHeader(500)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
 				body, _ := ioutil.ReadAll(resp.Body)
 				log.Println(body)
-				w.WriteHeader(500)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 		}
