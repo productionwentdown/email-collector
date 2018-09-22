@@ -1,7 +1,8 @@
 pipeline:
   docker:
     image: plugins/docker
-    registry: registry.labs.0x.no
-    repo: registry.labs.0x.no/email-collector
+    registry: registry.makerforce.io
+    secrets: [ docker_username, docker_password ]
+    repo: registry.makerforce.io/pwd/email-collector
     tags:
       - latest
