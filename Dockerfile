@@ -1,7 +1,7 @@
-FROM golang:1.10-alpine as build
+FROM golang:1.12-alpine as build
 
 # args
-ARG version="1.0.1"
+ARG version="1.0.2"
 ARG repo="github.com/productionwentdown/email-collector"
 
 # dependencies
